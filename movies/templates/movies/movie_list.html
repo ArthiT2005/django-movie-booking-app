@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BookMyShow</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
+    .navbar { background-color: #e50914; }
+    .navbar-brand { color: white; font-weight: bold; }
+    .carousel-inner img { width: 100%; height: 400px; object-fit: cover; }
+    .section-title { font-size: 24px; font-weight: bold; margin: 40px 0 20px; color: #333; }
+    .card { transition: transform 0.3s; }
+    .card:hover { transform: scale(1.05); }
+    .footer { background-color: #343a40; color: white; padding: 20px 0; margin-top: 40px; }
+    .text-white { color: white !important; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand" href="#">BookMyShow</a>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- Carousel -->
+    <div id="movieCarousel" class="carousel slide mb-4" data-ride="carousel">
+      <ol class="carousel-indicators">
+        <li data-target="#movieCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#movieCarousel" data-slide-to="1"></li>
+        <li data-target="#movieCarousel" data-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1688634198341_webbannerticketnapass.jpg" class="d-block w-100" alt="Banner 1">
+        </div>
+        <div class="carousel-item">
+          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1687333369285_3.jpg" class="d-block w-100" alt="Banner 2">
+        </div>
+        <div class="carousel-item">
+          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1688466981634_web.jpg" class="d-block w-100" alt="Banner 3">
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended Movies -->
+    <div class="section-title">Recommended Movies</div>
+    <div class="row">
+      {% for movie in movies|slice:":4" %}
+        <div class="col-md-3 col-sm-6 mb-4">
+          <div class="card h-100">
+            <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.name }}" height="300"/>
+            <div class="card-body d-flex flex-column justify-content-between">
+              <h5 class="card-title text-center">{{ movie.name }}</h5>
+
+              <!-- Trailer Modal Trigger -->
+              <button type="button" class="btn btn-primary btn-block mb-2" data-toggle="modal" data-target="#trailerModal{{ movie.id }}">
+                Watch Trailer
+              </button>
+
+              <a href="{% url 'theater_list' movie.id %}" class="btn btn-danger btn-block mt-auto">Book Now</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trailer Modal -->
+        <div class="modal fade" id="trailerModal{{ movie.id }}" tabindex="-1" role="dialog" aria-labelledby="trailerModalLabel{{ movie.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="trailerModalLabel{{ movie.id }}">{{ movie.name }} - Trailer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="stopVideo('{{ movie.id }}')">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="embed-responsive embed-responsive-16by9">
+                  <iframe id="trailerIframe{{ movie.id }}" class="embed-responsive-item"
+                          src="{{ movie.trailer_url|cut:'watch?v='|add:'embed/' }}" allowfullscreen></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Today's Shows -->
+    <div class="section-title">Today's Shows</div>
+    <div class="row">
+      {% if today_theaters %}
+        {% for show in today_theaters %}
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100">
+              <img src="{{ show.movie.image.url }}" class="card-img-top" alt="{{ show.movie.name }}" height="300"/>
+              <div class="card-body d-flex flex-column justify-content-between">
+                <h5 class="card-title text-center">{{ show.movie.name }}</h5>
+                <p class="card-text text-center">Show Time: {{ show.show_time|time:"h:i A" }}</p>
+                <p class="card-text text-center">Theater: {{ show.name }}</p>
+                <a href="{% url 'theater_list' show.movie.id %}" class="btn btn-danger btn-block mt-auto">Book Now</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12 text-center">
+          <p class="text-muted">No shows today.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer class="footer text-center">
+    <div class="container">
+      <span class="text-white">© 2025 BookMyShow Clone</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function stopVideo(id) {
+      const iframe = document.getElementById(`trailerIframe${id}`);
+      const src = iframe.src;
+      iframe.src = "";
+      setTimeout(() => {
+        iframe.src = src;
+      }, 100);
+    }
+  </script>
+</body>
+</html>
