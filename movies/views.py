@@ -13,7 +13,6 @@ def movie_list(request):
     else:
         movies = Movie.objects.all()
 
-    # ✅ Highlight current day shows
     today = localdate()
     today_theaters = Theater.objects.filter(time__date=today)
 
@@ -25,7 +24,6 @@ def movie_list(request):
 
 
 def movie_detail(request, movie_id):
-    # ✅ Shows movie trailer and all showtimes
     movie = get_object_or_404(Movie, id=movie_id)
     theaters = Theater.objects.filter(movie=movie)
     return render(request, 'movies/movie_detail.html', {
@@ -48,7 +46,6 @@ def book_seats(request, theater_id):
     theater = get_object_or_404(Theater, id=theater_id)
     seats = Seat.objects.filter(theater=theater)
 
-    # ✅ Release expired reservations
     for seat in seats:
         seat.release_reservation_if_expired()
 
