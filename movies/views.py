@@ -18,7 +18,7 @@ def movie_list(request):
 
     return render(request, 'movies/movie_list.html', {
         'movies': movies,
-        'today_theaters': today_theaters,
+        'today_theaters': today_theaters,  # ✅ Highlight today's shows
         'today': today
     })
 
@@ -26,9 +26,16 @@ def movie_list(request):
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
     theaters = Theater.objects.filter(movie=movie)
+    trailer_embed = None
+
+    # ✅ Auto-convert YouTube URL to embeddable format
+    if movie.trailer_url and 'watch?v=' in movie.trailer_url:
+        trailer_embed = movie.trailer_url.replace('watch?v=', 'embed/')
+
     return render(request, 'movies/movie_detail.html', {
         'movie': movie,
-        'theaters': theaters
+        'theaters': theaters,
+        'trailer_embed': trailer_embed  # ✅ Trailer support
     })
 
 
@@ -46,6 +53,7 @@ def book_seats(request, theater_id):
     theater = get_object_or_404(Theater, id=theater_id)
     seats = Seat.objects.filter(theater=theater)
 
+    # ✅ Clear expired reservations before showing
     for seat in seats:
         seat.release_reservation_if_expired()
 
@@ -57,21 +65,22 @@ def book_seats(request, theater_id):
             return render(request, "movies/seat_selection.html", {
                 'theater': theater,
                 "seats": seats,
-                'error': "No seat selected."
+                'error': "No seat selected.",
+                'countdown_minutes': 5
             })
 
         for seat_id in selected_seats:
             seat = get_object_or_404(Seat, id=seat_id, theater=theater)
 
-            # Skip if still reserved or booked
+            # Skip if already reserved/booked
             if seat.is_reserved() or seat.is_booked:
                 error_seats.append(seat.seat_number)
                 continue
 
             try:
                 seat.reserved_by = request.user
-                seat.reserved_until = now() + timedelta(minutes=5)
-                seat.is_booked = False  # will be True only after payment (optional logic)
+                seat.reserved_until = now() + timedelta(minutes=5)  # ✅ 5-minute reservation timeout
+                seat.is_booked = False
                 seat.save()
 
                 Booking.objects.create(
@@ -88,12 +97,14 @@ def book_seats(request, theater_id):
             return render(request, "movies/seat_selection.html", {
                 'theater': theater,
                 "seats": seats,
-                'error': f"Seats already booked or reserved: {', '.join(error_seats)}"
+                'error': f"Seats already booked or reserved: {', '.join(error_seats)}",
+                'countdown_minutes': 5
             })
 
-        return redirect('profile')  # 🔁 Redirect after booking (e.g., to confirmation page)
+        return redirect('profile')  # redirect after booking
 
     return render(request, "movies/seat_selection.html", {
         'theater': theater,
-        "seats": seats
+        "seats": seats,
+        'countdown_minutes': 5  # ⏳ add countdown support
     })

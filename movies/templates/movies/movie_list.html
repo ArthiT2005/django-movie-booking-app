@@ -15,7 +15,7 @@
     .card { transition: transform 0.3s; }
     .card:hover { transform: scale(1.05); }
     .footer { background-color: #343a40; color: white; padding: 20px 0; margin-top: 40px; }
-    .text-white { color: white !important; }
+    .highlight-card { border: 2px solid #e50914; box-shadow: 0 0 15px rgba(229, 9, 20, 0.4); }
   </style>
 </head>
 <body>
@@ -55,9 +55,11 @@
               <h5 class="card-title text-center">{{ movie.name }}</h5>
 
               <!-- Trailer Modal Trigger -->
+              {% if movie.trailer_url %}
               <button type="button" class="btn btn-primary btn-block mb-2" data-toggle="modal" data-target="#trailerModal{{ movie.id }}">
                 Watch Trailer
               </button>
+              {% endif %}
 
               <a href="{% url 'theater_list' movie.id %}" class="btn btn-danger btn-block mt-auto">Book Now</a>
             </div>
@@ -65,6 +67,7 @@
         </div>
 
         <!-- Trailer Modal -->
+        {% if movie.trailer_url %}
         <div class="modal fade" id="trailerModal{{ movie.id }}" tabindex="-1" role="dialog" aria-labelledby="trailerModalLabel{{ movie.id }}" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
@@ -83,6 +86,7 @@
             </div>
           </div>
         </div>
+        {% endif %}
       {% endfor %}
     </div>
 
@@ -92,7 +96,7 @@
       {% if today_theaters %}
         {% for show in today_theaters %}
           <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 highlight-card">
               <img src="{{ show.movie.image.url }}" class="card-img-top" alt="{{ show.movie.name }}" height="300"/>
               <div class="card-body d-flex flex-column justify-content-between">
                 <h5 class="card-title text-center">{{ show.movie.name }}</h5>
