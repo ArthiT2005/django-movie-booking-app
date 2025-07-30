@@ -1,12 +1,8 @@
 services:
   - type: web
-    name: django-movie-booking
+    name: bookmyseat-app
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn bookmyseat.wsgi:application"
-    envVars:
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: False
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn bookmyseat.wsgi:application
     autoDeploy: true
+    region: oregon
